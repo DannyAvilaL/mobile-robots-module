@@ -1,4 +1,4 @@
-% Created 2022-03-31 Thu 18:29
+% Created 2023-03-27 Mon 11:01
 % Intended LaTeX compiler: pdflatex
 \documentclass[presentation,aspectratio=169]{beamer}
 \usepackage[utf8]{inputenc}
@@ -34,17 +34,9 @@
 \maketitle
 
 \section{Mobile robots}
-\label{sec:org29e8592}
+\label{sec:orgc1221b0}
 
-\begin{frame}[label={sec:orgb81a4f2}]{El concepto de \emph{estado}}
-\pause
-
-\begin{quote}
-El conjunto de información sobre el pasado del sistema necesario para predicir el comportamiento del sistema en el futuro (dado todas las señales de entrada)
-\end{quote}
-\end{frame}
-
-\begin{frame}[label={sec:orge9b96e8}]{Modelo canónico a.k.a modelo uniciclo}
+\begin{frame}[label={sec:org89e29e8}]{Modelo canónico a.k.a modelo uniciclo}
 \begin{center}
  \includegraphics[width=.6\linewidth]{../figures/unicycle-kth.png}
 \end{center}
@@ -55,9 +47,9 @@ De Martina Zambelli (2013) \emph{Posture regulation for unicycle-like robots wit
 
 
 \section{Differential drive}
-\label{sec:org7c4c6bd}
+\label{sec:orge3598b7}
 
-\begin{frame}[label={sec:orgfc27793}]{Robot tipo diferencial (\emph{differential drive})}
+\begin{frame}[label={sec:orgab0c5d3}]{Robot tipo diferencial (\emph{differential drive})}
 \begin{center}
  \includegraphics[width=.5\linewidth]{../figures/X80Pro.jpg}
 \end{center}
@@ -65,7 +57,7 @@ De Martina Zambelli (2013) \emph{Posture regulation for unicycle-like robots wit
 X80Pro Dr. Robot Inc.
 \end{frame}
 
-\begin{frame}[label={sec:orgbc4f0cd}]{Robot móvil - modelo uniciclo}
+\begin{frame}[label={sec:orgabe4a8e}]{Robot móvil - modelo canónico}
 \begin{columns}
 \begin{column}{0.4\columnwidth}
 \begin{center}
@@ -86,13 +78,16 @@ X80Pro Dr. Robot Inc.
 
 
 \[\frac{d}{dt} \xi = \begin{bmatrix} \dot{\theta}\\\dot{x}\\\dot{y} \end{bmatrix} = \begin{bmatrix} \omega\\ v\cos\theta\\v\sin\theta\end{bmatrix} \]
+
+
+\pause
 \end{column}
 \end{columns}
 \end{frame}
 
 
 
-\begin{frame}[label={sec:orgee79b36}]{Diferencial a modelo uniciclo}
+\begin{frame}[label={sec:org7644e02}]{De robot diferencial a modelo canónico}
 \begin{columns}
 \begin{column}{0.4\columnwidth}
 \begin{center}
@@ -106,20 +101,22 @@ X80Pro Dr. Robot Inc.
 \alert{Actividad} Determine
 
 \begin{enumerate}
-\item La velocidad lineal (\(v_R\), \(v_L\)) de cada rueda dado su velocidad angular (\(\omega_R\), \(\omega_L\))
+\item La velocidad lineal (\(v_R\), \(v_L\)) del centro de cada rueda dado su velocidad angular (\(\omega_R\), \(\omega_L\))
 
 \item La velocidad lineal \(v\) del centro robot dado las dos velocidades \(v_R\) y \(v_L\)
 
 \item La velocidad angular \(\omega\) del robot dado las dos velocidades \(v_R\) y \(v_L\)
+\end{enumerate}
 
-\item Las relaciones invertidas. Es decir, las velocidades angulares \(\omega_R\) y \(\omega_L\) de los ruedos dado las velocidades \(v\) y \(\omega\).
+
+\begin{enumerate}
+\item Las relaciones invertidas. Es decir, las velocidades angulares \(\omega_R\) y \(\omega_L\) de las ruedas dado las velocidades \(v\) y \(\omega\).
 \end{enumerate}
 \end{column}
 \end{columns}
 \end{frame}
 
-
-\begin{frame}[label={sec:orgbc5cbd4}]{Diferencial a modelo uniciclo}
+\begin{frame}[label={sec:org3ccb856}]{Diferencial a modelo canónico}
 \begin{columns}
 \begin{column}{0.4\columnwidth}
 \begin{center}
@@ -135,7 +132,7 @@ Asumiendo simetría entre las dos ruedas y en la dirección de giro.
 \pause
 
 \alert{Actividad}
-Dibuje la región de posibles valores de la señal de entrada al modelo canónico,
+En el plano \(v,\, \omega\),  dibuje la región de posibles valores de la señal de entrada al modelo canónico,
 \[ u(t) = \begin{bmatrix} \omega(t)\\v(t) \end{bmatrix}, \]
 dado los límites de la velocidad angular de las ruedas.
 \end{column}
@@ -143,15 +140,10 @@ dado los límites de la velocidad angular de las ruedas.
 \end{frame}
 
 
-\begin{frame}[label={sec:org69b2c3d}]{Implementación}
-Notebook en google colab (página en Canvas)
-\end{frame}
-
-
 \section{Car-like}
-\label{sec:org687bd93}
+\label{sec:orgac9e6dc}
 
-\begin{frame}[label={sec:orge8c3f3b}]{Robots tipo coche - modelo bicicleta}
+\begin{frame}[label={sec:org7a1a406}]{Robots tipo coche - modelo bicicleta}
 \begin{columns}
 \begin{column}{0.4\columnwidth}
 \begin{center}
@@ -162,7 +154,7 @@ Notebook en google colab (página en Canvas)
 \begin{column}{0.6\columnwidth}
 \pause
 
-Para un robot que se mueve instantaneamente en una trayectoria círcular con radie \(R\), la relación entre la velocidad lineal \(v\) y la velocidad angular \(\omega\) es
+Para un robot que se mueve instantaneamente en una trayectoria círcular con radie \(R\), la relación entre su velocidad lineal \(v\) y su velocidad angular \(\omega\) es
 
 \pause
 
@@ -179,8 +171,7 @@ Para un robot que se mueve instantaneamente en una trayectoria círcular con rad
 
 
 
-
-\begin{frame}[label={sec:orgd830cee}]{Robots tipo coche - modelo bicicleta}
+\begin{frame}[label={sec:org5547307}]{Robots tipo coche - modelo bicicleta}
 \begin{columns}
 \begin{column}{0.4\columnwidth}
 \begin{center}
@@ -195,15 +186,10 @@ Para cierto robot
 
 \pause
 
-\alert{Actividad} Dibuje la región de posibles valores de la señal de entrada al modelo canónico,
+\alert{Actividad} En el plano \(v,\, \omega\), dibuje la región de posibles valores de la señal de entrada al modelo canónico,
 \[ u(t) = \begin{bmatrix} \omega(t)\\v(t) \end{bmatrix}, \]
 dado los límites de la velocidad \(v\) y del ángulo de dirección \(\phi\).
 \end{column}
 \end{columns}
-\end{frame}
-
-
-\begin{frame}[label={sec:org5dbd0e6}]{Implementación}
-Notebook en google colab (página en Canvas)
 \end{frame}
 \end{document}

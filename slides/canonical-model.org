@@ -26,7 +26,7 @@
 
 * Mobile robots
 
-** El concepto de /estado/
+** El concepto de /estado/                                         :noexport:
 
 #+BEAMER: \pause
 
@@ -52,7 +52,7 @@ El conjunto de información sobre el pasado del sistema necesario para predicir 
 
     X80Pro Dr. Robot Inc.
     
-** Robot móvil - modelo uniciclo
+** Robot móvil - modelo canónico
 *** Graphics
 :PROPERTIES:
 :BEAMER_col: 0.4
@@ -81,11 +81,19 @@ El conjunto de información sobre el pasado del sistema necesario para predicir 
     \[\frac{d}{dt} \xi = \begin{bmatrix} \dot{\theta}\\\dot{x}\\\dot{y} \end{bmatrix} = \begin{bmatrix} \omega\\ v\cos\theta\\v\sin\theta\end{bmatrix} \]
 
     
-# #+BEAMER: \pause
+#+BEAMER: \pause
 
 # *Actividad* En simulink
 
 *** Notes                                                          :noexport:
+- *Block-model*
+  - input w,v
+  - output complete state
+- *State-space model*
+  - \dot{\xi} = f(\xi, u)
+  - y = [\theta, x, y] = \xi
+- *Simulink*
+- Make submodel -> two inputs, -> three outputs
 - Add three integrators, label
 - Add XY-scope and regular scope
 - Link x and y to XY-scope, link theta to other scope
@@ -97,7 +105,7 @@ El conjunto de información sobre el pasado del sistema necesario para predicir 
 
 
 
-** Diferencial a modelo uniciclo
+** De robot diferencial a modelo canónico
 *** Graphics
 :PROPERTIES:
 :BEAMER_col: 0.4
@@ -117,16 +125,30 @@ El conjunto de información sobre el pasado del sistema necesario para predicir 
 
 *Actividad* Determine
 
-1) La velocidad lineal ($v_R$, $v_L$) de cada rueda dado su velocidad angular ($\omega_R$, $\omega_L$)
+1) La velocidad lineal ($v_R$, $v_L$) del centro de cada rueda dado su velocidad angular ($\omega_R$, $\omega_L$)
 
 2) La velocidad lineal $v$ del centro robot dado las dos velocidades $v_R$ y $v_L$
 
 3) La velocidad angular $\omega$ del robot dado las dos velocidades $v_R$ y $v_L$
 
-4) Las relaciones invertidas. Es decir, las velocidades angulares $\omega_R$ y $\omega_L$ de los ruedos dado las velocidades $v$ y $\omega$.
 
-   
-** Diferencial a modelo uniciclo
+4) Las relaciones invertidas. Es decir, las velocidades angulares $\omega_R$ y $\omega_L$ de las ruedas dado las velocidades $v$ y $\omega$.
+
+*** Notes                                                          :noexport:
+
+1. v = r \omega
+2. Origin in midpoint. Travelling instantaneously in direction v, with magnitude |v|
+   w = -(v_L-v)/(d/2) = (v_R-v)/(d/2)  =>  v-v_L = -v + v_R   =>  v = 0.5(v_L + v_R)
+   Continuous change from v_R to v_L, so at midpoint
+3. w = (v_R - v)/(d/2) = (v_R - 0.5v_R - 0.5v_L)/(d/2) = (v_R - v_L)/2/(d/2) = (v_R - v_L)/d
+4. 0.5v_L + 0.5v_R = v
+   -v_L + v_R = w*d
+
+   0.5v_R + 0.5v_R = v+w*d/2  => v_R = v + w*d/2 => w_R = (v + w*d/2)/r
+
+   v_L = -wd + v_R = v - w*d/2                   => w_L = (v-w*d/2)/r
+
+** Diferencial a modelo canónico
 *** Graphics
 :PROPERTIES:
 :BEAMER_col: 0.4
@@ -149,12 +171,17 @@ Asumiendo simetría entre las dos ruedas y en la dirección de giro.
 #+BEAMER: \pause
 
 *Actividad*
-Dibuje la región de posibles valores de la señal de entrada al modelo canónico,
+En el plano \(v,\, \omega\),  dibuje la región de posibles valores de la señal de entrada al modelo canónico,
 \[ u(t) = \begin{bmatrix} \omega(t)\\v(t) \end{bmatrix}, \]
 dado los límites de la velocidad angular de las ruedas.
 
 
-** Implementación
+*** Notes                                                          :noexport:
+
+- vmax = \wmax * r
+- wmax = vmax/(d/2) = 2 vmax /d
+
+** Implementación                                                  :noexport:
 
 Notebook en google colab (página en Canvas)
 
@@ -178,7 +205,7 @@ Notebook en google colab (página en Canvas)
 
 #+BEAMER: \pause
 
-Para un robot que se mueve instantaneamente en una trayectoria círcular con radie $R$, la relación entre la velocidad lineal $v$ y la velocidad angular $\omega$ es
+Para un robot que se mueve instantaneamente en una trayectoria círcular con radie $R$, la relación entre su velocidad lineal $v$ y su velocidad angular $\omega$ es
 
 #+BEAMER: \pause
 
@@ -191,6 +218,11 @@ Para un robot que se mueve instantaneamente en una trayectoria círcular con rad
 *Actividad* Determine la velocidad angular $\omega$ como función de la velocidad $v$ y del ángulo de dirección $\phi$. Determine también la función inversa.
 
 
+*** Notes                                                          :noexport:
+
+1. l/R = tan \phi => R = l/tan(\phi) = l * cos(\phi)/sin(\phi) = l cot(\phi)
+2. w = v/R = v/l * tan(\phi)
+   
 
 
 ** Robots tipo coche - modelo bicicleta
@@ -214,12 +246,16 @@ Para cierto robot
 
 #+BEAMER: \pause
 
-*Actividad* Dibuje la región de posibles valores de la señal de entrada al modelo canónico,
+*Actividad* En el plano \(v,\, \omega\), dibuje la región de posibles valores de la señal de entrada al modelo canónico,
 \[ u(t) = \begin{bmatrix} \omega(t)\\v(t) \end{bmatrix}, \]
 dado los límites de la velocidad $v$ y del ángulo de dirección $\phi$.
 
+*** Notes                                                          :noexport:
 
-** Implementación
+- vlimites -> dados
+- Max angulo de direcc => max vel angular. => wmax = v * (tan(phi)/l)
+
+** Implementación                                                  :noexport:
 
 Notebook en google colab (página en Canvas)
 
@@ -255,7 +291,7 @@ que mueve el robot de una posición y orientación inicial ($x(0)$, $y(0)$, $\th
 Dibuje la señal de entrada que 
 1) mueve el robot una distancia 1m derecho en 3 segundos.
 2) cambia la dirección del robot 90 grados hacia izquierda.
-3) que mueve el robot en una trayectoria de forma cuadrada con lados de 1 metros en 20 segundos.
+3) mueve el robot en una trayectoria de forma cuadrada con lados de 1 metros en 20 segundos.
 
 ** Implementación del control en lazo abierto
 
