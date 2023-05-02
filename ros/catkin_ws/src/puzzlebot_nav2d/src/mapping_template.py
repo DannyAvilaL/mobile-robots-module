@@ -80,9 +80,15 @@ class Mapper:
                 # 1) For each ray in the scan, calculate the corresponding
                 #    position in the map by transforming the ray from the robot
                 #    frame to the map frame, using the odometry data. 
+<<<<<<< HEAD
 		        #    It is convenient to define the map frame as having its origin
 		        #    in the pixel (0,0), and directions corresponding to the 
 		        #    rows and pixels of the map (occupancy grid).
+=======
+		#    It is convenient to define the map frame as having its origin
+		#    in the pixel (0,0), and directions corresponding to the 
+		#    rows and pixels of the map (occupancy grid).
+>>>>>>> 76e4f5156d6cd3f54779a8462c8ac72278958494
                 #    is defined as the frame of the first laser scan, when the robot
                 #    is initialized.
                 # 2) If the ray range is less than max_range, then set the map pixel
@@ -94,9 +100,17 @@ class Mapper:
 
                 orig_m, xy_m = scan_to_map_coordinates(self.scan, self.odom, self.map.info.origin)
 
+<<<<<<< HEAD
                 for xy_ in xy_m:
                     #print(xy_)
                     ray_to_pixels(orig_m[0], orig_m[1], xy_[0], xy_[1], self.map.info.resolution, self.map2d)
+=======
+                print(orig_m)
+                for xy_ in xy_m:
+                    #print(xy_)
+                    ray_to_pixels(orig_m[0], orig_m[1], xy_[0], xy_[1], self.map.info.resolution, self.map2d)
+
+>>>>>>> 76e4f5156d6cd3f54779a8462c8ac72278958494
 
                 # Publish the map
                 np.copyto(self.map.data,  self.map2d.reshape(-1)) # Copy from map2d to 1d data, fastest way
@@ -106,6 +120,7 @@ class Mapper:
             
 
 def ray_to_pixels(xr, yr, x, y, map_resolution, map):
+<<<<<<< HEAD
     """ Set the pixels along the ray with origin (xr,yr) and with range ending at (x,y) to 0 (free) 
     and the end point to 100 (occupied).
 
@@ -113,6 +128,9 @@ def ray_to_pixels(xr, yr, x, y, map_resolution, map):
     the range of the ray by the map resolution.
     Then you convert these points (each corresponding to a pixel)
 
+=======
+    """ Set the pixels along the ray with origin (xr,yr) and with range ending at (x,y) to 0 (free) and the end point to 100 (occupied).
+>>>>>>> 76e4f5156d6cd3f54779a8462c8ac72278958494
     Arguments
     ---------
     xr : float
@@ -127,6 +145,10 @@ def ray_to_pixels(xr, yr, x, y, map_resolution, map):
         Resolution of map in meter/pixel
     map : ndarray
         The map as a 2d numpy array
+<<<<<<< HEAD
+=======
+
+>>>>>>> 76e4f5156d6cd3f54779a8462c8ac72278958494
     Tests
     ------
     >>> mapmsg = test_map()
@@ -152,7 +174,11 @@ def ray_to_pixels(xr, yr, x, y, map_resolution, map):
     True
     >>> map[5, 12] == 0
     True
+<<<<<<< HEAD
     >>> #map[4, 12] == 100*[(0.0, -1.0), (1.0, 0.0), (0.0, 1.0)]
+=======
+    >>> map[4, 12] == 100
+>>>>>>> 76e4f5156d6cd3f54779a8462c8ac72278958494
     True
     >>> # Test 3 - ray from (6,3) to (5,3)
     >>> x = 5.0
@@ -167,6 +193,7 @@ def ray_to_pixels(xr, yr, x, y, map_resolution, map):
     >>> #map
     """
 
+<<<<<<< HEAD
     v = np.array([x-xr, y-yr]) #vector / linea entre la posicion del robot a la del punto
     n_pixels = np.linalg.norm(v)/map_resolution #pixeles por vector
     v = v/n_pixels # de los metros calculados, a cuant x0 = int(round(x0/resolution))
@@ -204,6 +231,23 @@ def ray_to_pixels(xr, yr, x, y, map_resolution, map):
         map[y, x] = 100
     #print("MAP", map[2:10, 9:15],)
     #print(x_, y_, len(map))
+=======
+    v = np.array([x-xr, y-yr])
+    n_pixels = np.linalg.norm(v)/map_resolution
+    v = v/n_pixels
+    xp = int(round(xr/map_resolution))
+    yp = int(round(yr/map_resolution))
+    # Set pixels along the ray to 0 (free)
+    for i in range(int(n_pixels)):
+        #-------------------------------------------
+        # Your code here
+        # Determine x_ and y_ from xp, yp, i and v
+        x_ = 0
+        y_ = 0
+        map[y_, x_] = 0
+    # Set last pixel of ray to 100
+    map[int(round(y/map_resolution)), int(round(x/map_resolution))] = 100
+>>>>>>> 76e4f5156d6cd3f54779a8462c8ac72278958494
 
 def scan_to_map_coordinates(scan, odom, origin):
     """ Convert a scan from the robot frame to the map frame.
@@ -243,6 +287,7 @@ def scan_to_map_coordinates(scan, odom, origin):
     >>>
     """
 
+<<<<<<< HEAD
     T_ob = numpify(odom.pose.pose)  # Transform from odom to base_link 4x4
     T_om = numpify(origin) 
     T_mo = np.linalg.inv(T_om) #4x4
@@ -261,6 +306,22 @@ def scan_to_map_coordinates(scan, odom, origin):
         angulo += scan.angle_increment
     
     return TT[:2, 2], posiciones
+=======
+    T_ob = numpify(odom.pose.pose)  # Transform from odom to base_link
+    T_om = numpify(origin)
+    T_mo = np.linalg.inv(T_om)
+    T_mb = np.dot(T_mo, T_ob)
+    TT= np.eye(3)
+    TT[:2, :2] = T_mb[:2, :2]
+    TT[:2, 2] = T_mb[:2, 3]
+
+    #------------------------------------------------------
+    # Your code here
+    # Transform all the scan end points to the map frame
+    # scan_endpoints =
+    #-----------------------------------------------------
+    return TT[:2, 2], scan_endpoints
+>>>>>>> 76e4f5156d6cd3f54779a8462c8ac72278958494
 
 def polar_to_cartesian(r, th):
     """ Convert a polar coordinate to a cartesian coordinate.
@@ -292,6 +353,7 @@ def polar_to_cartesian(r, th):
     >>> np.allclose(y, 0.0)
     True
     """
+<<<<<<< HEAD
 
     #------------------------------------------------------
     # Your code here
@@ -301,6 +363,15 @@ def polar_to_cartesian(r, th):
     y = r * np.sin(th) 
     #-----------------------------------------------------
     return x, y
+=======
+
+    #------------------------------------------------------
+    # Your code here
+    # Convert the polar coordinate to a cartesian coordinate
+    # x =
+    # y =
+    #-----------------------------------------------------
+>>>>>>> 76e4f5156d6cd3f54779a8462c8ac72278958494
 
 def test_laser_scan():
     """ Create a simple test LaserScan message.
@@ -360,7 +431,10 @@ if __name__ == '__main__':
     resolution = rospy.get_param("/mapper/resolution", 0.1) # meters per pixel
 
     Mapper(width, height, resolution).mapit()
+<<<<<<< HEAD
 
+=======
+>>>>>>> 76e4f5156d6cd3f54779a8462c8ac72278958494
 
 
 

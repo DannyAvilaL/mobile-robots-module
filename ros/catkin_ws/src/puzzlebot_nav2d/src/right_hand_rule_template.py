@@ -1,4 +1,9 @@
 #!/usr/bin/env python  
+<<<<<<< HEAD
+=======
+""" Please  save this file to another name, then implement your
+solution """
+>>>>>>> 76e4f5156d6cd3f54779a8462c8ac72278958494
 import sys
 import numpy as np
 import rospy
