@@ -4,7 +4,7 @@
 
 import numpy as np
 import rospy
-import tf2_ros 
+import tf
 from tf import transformations as trf
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Vector3, TransformStamped, PoseWithCovariance, TwistWithCovariance, Point, Quaternion, Pose, Twist
@@ -28,7 +28,7 @@ class MyOdometryPublisher():
         self.wheel_r = 0.05
 
         # Publish to the odometry topic
-        self.odom_pub = rospy.Publisher("/odometry", Odometry, queue_size=1)
+        self.odom_pub = rospy.Publisher("/true_odometry", Odometry, queue_size=1)
 
         # Publish the simpler (estimated) state to separate topics
         self.x_pub = rospy.Publisher("/est_state/x", Float64, queue_size=1)
@@ -45,7 +45,7 @@ class MyOdometryPublisher():
         self.last_time = self.current_time
         
         # For broadcasting transform from base_link to odom 
-        self.br = tf2_ros.TransformBroadcaster() 
+        self.br = tf.TransformBroadcaster()
 
         self.rate = rospy.Rate(20)
         
@@ -82,8 +82,6 @@ class MyOdometryPublisher():
             self.pose[1] = y
             self.pose[2] = th
 
-
-
             odom_quat = trf.quaternion_from_euler(0, 0, th)
             # Calculate the pose covariance
             #
@@ -91,28 +89,30 @@ class MyOdometryPublisher():
 
             # Publish the transform between the odometry frame (fixed) and the base_link frame
 
-            t = TransformStamped()
-            t.header.stamp = rospy.Time.now()
-            t.header.frame_id = "odom"
-            t.child_frame_id = "base_link"
-            t.transform.translation.x = x
-            t.transform.translation.y = y
-            t.transform.translation.z = 0.0
-            t.transform.rotation = odom_quat
-            self.br.sendTransform(t)
+            # t = TransformStamped()
+            # t.header.stamp = rospy.Time.now()
+            # t.header.frame_id = "world"
+            # t.child_frame_id = "base_link"
+            # t.transform.translation.x = x
+            # t.transform.translation.y = y
+            # t.transform.translation.z = 0.0
+            # t.transform.rotation = odom_quat
+            # self.br.sendTransform(t)
+            cTime = rospy.Time.now()
+            self.br.sendTransform([x,y,0], odom_quat, cTime, "base_link", "map")
 
             # Publish the odometry message
             odom = Odometry()
             # Fill the message with your data
             odom.header.stamp = rospy.Time.now()
-            odom.header.frame_id = "odom"
+            odom.header.frame_id = "map"
             odom.child_frame_id = "base_link"
             # Set the position
             #pose_cov = np.cov(np.array([x, y, 0.0]), np.array([0.0, 0.0, th]))
             #rospy.loginfo("Len de pose_cov {}".format(len(pose_cov)))
             #t.transform.translation, t.transform.rotation
-            rospy.loginfo("Translation: {}".format(t.transform.translation))
-            rospy.loginfo("Rotation: {}".format(t.transform.rotation))
+            #rospy.loginfo("Translation: {}".format(trf.translation))
+            #rospy.loginfo("Rotation: {}".format(trf.transform.rotation))
             #odom.pose.pose = Pose(Point(x, y, 0.0), odom_quat)
             #odom.twist.twist = Twist(Vector3(vx, vy, 0), Vector3(0,0,w))
             odom.pose.pose = Pose(Point(x, y, 0.), 
@@ -126,7 +126,7 @@ class MyOdometryPublisher():
             #odom_cov = np.cov(np.array([vx, vy, 0.0]), np.array([0.0, 0.0, w]))
             odom.twist.twist = Twist( #TwistWithCovariance(Twist(
                                             Vector3(vx, vy, 0), 
-                                                    Vector3(0, 0, w)
+                                            Vector3(0, 0, w)
                                                        )
 
             # publish the message

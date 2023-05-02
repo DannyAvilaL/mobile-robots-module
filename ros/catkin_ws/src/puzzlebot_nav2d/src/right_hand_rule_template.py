@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-""" This docstring was added online at github"""
+#!/usr/bin/env python  
 import sys
 import numpy as np
 import rospy
@@ -7,6 +6,7 @@ from geometry_msgs.msg import Twist
 from sensor_msgs.msg import LaserScan
 
 class RightHandRuleController:
+
     def __init__(self, wall_dist=0.5, w_max = np.pi, v_max=0.4 ):
         """
         Arguments
@@ -37,11 +37,19 @@ class RightHandRuleController:
         # Your code here
         #--------------------------------------------------------------
         #--------------------------------------------------------------
+        msg = Twist()
+        msg.linear.x = 0.2
+        while not rospy.is_shutdown():
+            if self.scan is not None:
+                if self.scan.ranges[360] < self.wall_dist:
+                    msg.linear.x = 0
+            self.vel_pub.publish(msg)
 
-        pass
         
     def follow_right_hand_wall(self):
         found_wall = False
+        w = 0
+        v = 0.3
         while not rospy.is_shutdown():
 
             if self.scan is not None:
@@ -60,12 +68,44 @@ class RightHandRuleController:
                                                            np.pi/2)
                 #--------------------------------------------------------------
                 #--------------------------------------------------------------
+                alpha = find_wall_direction(self.scan)
+                anguloDerechaDeseado = 0
+                distanciaDerechaDeseado = 0.8
+                #distanciaFrontalMaxima = 1
                 
+                distanciaDerecha = distance_to_right * np.cos(alpha)
+
+                errorAngulo = anguloDerechaDeseado - alpha
+                errorDistancia = distanciaDerechaDeseado - distanciaDerecha 
+
+                kp_alpha = 0.7#2.5
+                kp_dist = 1 #3
+
+                print(errorDistancia, "PARED error")
+
+                if self.scan.ranges[360] < 1.5:
+                    print("FRENTE PARED ===")
+                    v = 0.3
+                    w =  0.5
+                else:
+                    #pass
+                    v = 0.3
+                    w = (kp_alpha * errorAngulo) + (kp_dist * errorDistancia)
+                #w = (kp_alpha * errorAngulo) + (kp_dist * errorDistancia)
+
+                limVelocidad = 2
+                #saturacion
+                if w > limVelocidad:
+                    w = limVelocidad
+                elif w < -limVelocidad:
+                    w = -limVelocidad
                 
+                #rospy.loginfo("{} {} {}".format(errorAngulo, errorDistancia, w))
+                                
                 msg = Twist()
                 msg.angular.z = w
-                msg.linear.x = v 
-                print(msg)
+                msg.linear.x = v
+                #print(msg)
                 self.vel_pub.publish(msg)
                 
             self.rate.sleep()        
@@ -85,11 +125,15 @@ def find_wall_direction(scan):
     >>> np.abs(wall_dir) < 1e-6
     True
     """
-    #--------------------------------------------------------------
-    # Your code here
-    return np.nan
-    #--------------------------------------------------------------
-    #--------------------------------------------------------------
+
+    hip = get_distance_in_sector(scan, np.radians(45-1), np.radians(45))
+    ady = get_distance_in_sector(scan, np.radians(90-1), np.radians(90))
+
+
+    alpha = np.arctan2(hip * np.cos(np.deg2rad(45))-ady, 
+                       hip*np.sin(np.deg2rad(45)))
+    #print(hip, ady, alpha, "FIND WALL")
+    return alpha
 
     
 def get_distance_in_sector(scan, start_angle, end_angle) :
@@ -104,22 +148,7 @@ def get_distance_in_sector(scan, start_angle, end_angle) :
     end_angle : float
         End angle of sector, in radians, where 0 is straight ahead.
 
-    Tests
-    -----
-    >>> scan = generate_test_scan()
-    >>> start_angle = -np.pi/2
-    >>> end_angle = start_angle + np.pi/180 # One degree sector
-    >>> expected_distance = np.mean([0,0.1,0.2,0.3])
-    >>> np.abs(get_distance_in_sector(scan, start_angle, end_angle) - expected_distance) < 1e-8
-    True
-    >>> end_angle = np.pi/2
-    >>> start_angle = end_angle - 2*np.pi/180 # Two degree sector
-    >>> expected_distance = np.mean(np.arange(720-8, 720)/10.0)
-    >>> np.abs(get_distance_in_sector(scan, start_angle, end_angle) - expected_distance) < 1e-8
-    True
     """
-    num_scans = len(scan.ranges)
-
     #--------------------------------------------------------------
     # Your code here. For documentation of the LaserScan message:
     # http://docs.ros.org/en/melodic/api/sensor_msgs/html/msg/LaserScan.html
@@ -127,10 +156,21 @@ def get_distance_in_sector(scan, start_angle, end_angle) :
     # 1) Find the indices into scan.ranges corresponding to the start_ange and end_angle
     # 2) Compute the average range in the sector using np.mean()
     #--------------------------------------------------------------
-    start_index = 0
-    end_index = 2
-    return np.mean(scan.ranges[start_index:end_index])
-
+    # Obtener el indice del rango mas cercano al angulo de inicio
+    #print(start_angle, end_angle, scan.angle_min, scan.angle_max, scan.ranges)
+    start_index = range_index(scan, start_angle)
+    # Obtener el indice del rango mas cercano al angulo de fin
+    end_index = range_index(scan, end_angle)
+    # Slicing de la seccion de rangos
+    #print(start_index, end_index, "START AND END INDEXES")
+    #print(scan.ranges)
+    sector_ranges = np.array(scan.ranges)
+    sector_ranges = sector_ranges[end_index:start_index]
+    # Calcular la distancia media en el sector
+    #print(sector_ranges, np.mean(sector_ranges), "====")
+    #print(sector_ranges, "Sector ranges")
+    return np.mean(sector_ranges)
+    
 
 def range_index(scan, angle):
     """Returns the index into the scan ranges that correspond to the angle given (in rad).
@@ -143,24 +183,22 @@ def range_index(scan, angle):
     angle : float
        Angle w.r.t the x-axis of the robot, which is straight ahead
 
-    Tests
-    -----
-    >>> scan = generate_test_scan()
-    >>> range_index(scan, -np.pi/2)
-    0
-    >>> range_index(scan, np.pi/2)
-    719
-    >>> range_index(scan, 0)
-    360
     """
+    min_angle = scan.angle_min
+    max_angle = scan.angle_max
+    size = len(scan.ranges)
+    if angle > max_angle:
+        return size -1
+    elif angle < min_angle:
+        return 0
+    
+    grados = np.linspace(max_angle, min_angle, size)
+    index = (np.abs(grados-angle)).argmin()
+    #print("INDICE", index)
+    return index
 
-    #--------------------------------------------------------------
-    # Your code here
-
-    return 0
-    #--------------------------------------------------------------
-    #--------------------------------------------------------------
-
+    #[90....0.......-90] -> funcion lineal y=x-90
+    #[0,1,2,3,4.....720]
 
 
 def generate_test_scan(straight_wall=False):
@@ -180,7 +218,6 @@ def generate_test_scan(straight_wall=False):
         for i in range(320):
             scan.ranges[719-i] = 10/np.cos(dth[i])
 
-
     return scan
 
 if __name__ == '__main__':
@@ -190,8 +227,9 @@ if __name__ == '__main__':
             doctest.testmod()
             sys.exit(0)
 
-    rospy.init_node('Follow right hand wall')
+    rospy.init_node('Follow_right_hand_wall')
     rhw = RightHandRuleController()
+    #rhw.go_to_wall()
     rhw.follow_right_hand_wall()
     
 

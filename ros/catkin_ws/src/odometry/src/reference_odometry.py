@@ -37,7 +37,7 @@ def pose2np(p):
     """ Returns a 4x4 numpy matrix representing the rigid transformation of the given Pose or
     Transform object.
     """
-    a = np.eye(4);
+    a = np.eye(4)
     if isinstance(p, Pose):
         q = np.array([p.orientation.x, p.orientation.y, p.orientation.z, p.orientation.w])
         qmat = trf.quaternion_matrix(q)
